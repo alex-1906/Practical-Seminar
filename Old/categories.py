@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-data = pd.read_csv('movies.csv')
+data = pd.read_csv('../movies.csv')
 print(data.columns)
 
 data_genres = pd.pivot_table(data,index=data['title'],columns=data['genres'])

@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-movies = pd.read_csv('movies.csv')
+movies = pd.read_csv('../movies.csv')
 ratings = pd.read_csv('ratings.csv')
 ratings.drop(columns='timestamp',inplace=True)
 movie_ratings = pd.merge(ratings,movies,on='movieId')

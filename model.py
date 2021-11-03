@@ -1,67 +1,60 @@
 import pandas as pd
 import numpy as np
-from scipy.sparse import csr_matrix
-from sklearn.neighbors import NearestNeighbors
-from fuzzywuzzy import process
-import itertools
+class myRecommender:
+   def __init__(self):
+ratings_df = pd.read_csv('ratings.csv')
+movies_df = pd.read_csv('movies.csv')
+movies_df['genres'] = movies_df.genres.str.split('|')
+movies_with_genres = movies_df.copy(deep=True)
+name = 'test'
+
+# Let's iterate through movies_df, then append the movie genres as columns of 1s or 0s.
+# 1 if that column contains movies in the genre at the present index and 0 if not.
+
+x = []
+for index, row in movies_df.iterrows():
+    x.append(index)
+    for genre in row['genres']:
+        movies_with_genres.at[index, genre] = 1
+
+# Confirm that every row has been iterated and acted upon
+print(len(x) == len(movies_df))
+movies_with_genres = movies_with_genres.fillna(0)
 
 
-movies = pd.read_csv('movies.csv')
-ratings = pd.read_csv('ratings.csv')
-ratings.drop(columns='timestamp',inplace=True)
-movie_ratings = pd.merge(ratings,movies,on='movieId')
+#movies_with_genres.drop(columns=['movieId','title','genres'],axis=1,inplace=True)
+
+#Let's look at the ratings dataframe
+ratings_df.drop('timestamp',axis=1,inplace=True)
+movie_ratings = pd.merge(ratings_df,movies_df,on='movieId')
 movie_ratings_user = movie_ratings.pivot_table(index='userId',columns='title',values='rating')
 
-
-#load datasets and transform it into sparse matrix
-movies_ = 'movies.csv'
-ratings_ = 'ratings.csv'
-
-df_movies =pd.read_csv(movies_, usecols =['movieId','title'],dtype={'movieId':'int32','title':'str'})
-df_ratings =pd.read_csv(ratings_, usecols =['userId','movieId','rating'],dtype={'userId':'int32','movieId':'int32','rating':'float32'})
-
-movies_users = df_ratings.pivot(index='movieId',columns='userId',values='rating').fillna(0)
-matrix_movies_users = csr_matrix(movies_users)
-
-#instantiate model
-knn = NearestNeighbors(metric='cosine',algorithm='brute')
-
-#method for recommendations
-def recommender(movie,data,model,n_recommendations):
-    model.fit(data)
-    idx = process.extractOne(movie,df_movies['title'])
-    print('Movie selected: ',idx[0],',','Index: ',idx[2])
-    distances,indices = model.kneighbors(data[idx[2]],n_neighbors=n_recommendations)
-    indices = np.delete(indices,0)
-    related_movies = []
-    for i in indices:
-        related_movies.append(df_movies['title'][i])
-    return related_movies
+indices = pd.Series(movies_df.index,index=movies_df['title'])
 
 
-def get_recommendations(userId,best_movies):
+def create_user_profile(userId):
+    user_profile = movie_ratings_user.iloc[userId]
+    user_profile.dropna(inplace = True)
+    user_ratings = user_profile
+    liste = []
+    for i in user_profile.index:
+        liste.append(movies_with_genres.iloc[indices[i]])
+    user_profile_df = pd.concat(liste,axis=1).T
+    user_profile_df = user_profile_df.reset_index()
+    user_profile_df.drop(columns=['movieId','genres','index'],inplace=True)
+    return user_ratings,user_profile_df
+
+def create_user_preferences(userId):
+    ratings, profile = create_user_profile(userId)
+    ratings_df = pd.DataFrame(list(zip(ratings.index, ratings.values)), columns=['title', 'rating'])
+    user_preferences = profile.T.dot(ratings_df.rating)
+    return user_preferences
+
+def get_user_recommendations(userId):
+    user_preferences = create_user_preferences(userId)
+    recommendations_table = movies_with_genres.dot(user_preferences.score.to_numpy()) / (user_preferences.score.sum())
 
 
-    recommendations = []
-    for i in best_movies:
-        print(recommender(i, matrix_movies_users, knn, 4))
-        print()
-        recommendations.append(recommender(i, matrix_movies_users, knn, 4))
-
-    recommendations = list(itertools.chain(*recommendations))
-
-    return recommendations
-def get_best_movies(userId):
-    userProfile = movie_ratings_user.loc[userId]
-    userProfile.dropna(inplace=True)
-    userProfile = userProfile.sort_values(ascending=False)
-    best_movies = userProfile[:10]
-    best_movies = best_movies.to_frame().index.values.tolist()
-    return best_movies
-
-
-
-
-
-
-
+print(create_user_preferences(19))
+#movies_with_genres.drop(columns=['movieId','title','genres'],inplace=True)
+#print(get_user_recommendations(19))
