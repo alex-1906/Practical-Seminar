@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-class myRecommender:
-   def __init__(self):
+
+
 ratings_df = pd.read_csv('ratings.csv')
 movies_df = pd.read_csv('movies.csv')
 movies_df['genres'] = movies_df.genres.str.split('|')

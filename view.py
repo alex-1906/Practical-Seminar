@@ -12,5 +12,5 @@ user_preferences = model.create_user_preferences(19)
 print(user_preferences)
 
 st.write('test')
-mymodel
+
 #st.write(user_preferences.values)
