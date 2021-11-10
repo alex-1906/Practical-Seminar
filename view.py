@@ -13,4 +13,8 @@ print(user_preferences)
 
 st.write('test')
 
+# does not work
 #st.write(user_preferences.values)
+
+# works
+st.write(user_preferences.dropna())
