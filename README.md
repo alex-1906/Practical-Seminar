@@ -10,6 +10,8 @@ TODO:
   - [ ] display the recommendations for user
   - [ ] get the influence scores of each movie rated by the user
   - [ ] display the influence profile
+  - [ ] usage description
+  - [ ] repository description
 
 
   - [ ] get IMDB movie posters for each movie in profile and display on dashboard
