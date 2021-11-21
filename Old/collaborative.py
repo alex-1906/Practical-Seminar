@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-movies_df = pd.read_csv('movies.csv')
-ratings_df = pd.read_csv('ratings.csv')
+movies_df = pd.read_csv('../movies.csv')
+ratings_df = pd.read_csv('../ratings.csv')
 
 movie_ratings = pd.merge(ratings_df,movies_df,on='movieId')
 movie_ratings.drop('timestamp',axis=1,inplace=True)

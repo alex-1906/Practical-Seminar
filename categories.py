@@ -105,7 +105,9 @@ def get_influences(movieId,userId):
  #   print(get_influences(i,15))
 
 st.title("Recommender System Dashboard")
-selected_userId =  st.number_input('Choose user', min_value=1, max_value=610, value=1, step=1)
+def counter_reset():
+    st.session_state.count = 0
+selected_userId =  st.number_input('Choose user', min_value=1, max_value=610, value=1, step=1,on_change=counter_reset)
 st.write('Preferences of user: ',selected_userId)
 #get recommendations and standardize values between 0 and 1
 recommendations = get_user_recommendations(selected_userId).head()
@@ -114,6 +116,7 @@ recommendations.score = recommendations.score/recommendations.score.max()
 
 if 'count' not in st.session_state:
 	st.session_state.count = 0
+
 
 def increment_counter():
 	st.session_state.count += 1

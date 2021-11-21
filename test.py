@@ -1,14 +1,3 @@
 import streamlit as st
 
-st.title('Counter Example using Callbacks')
-if 'count' not in st.session_state:
-	st.session_state.count = 0
-
-def increment_counter():
-	st.session_state.count += 1
-
-st.button('Increment', on_click=increment_counter)
-
-st.write('Count = ', st.session_state.count)
-
-print(st.session_state)
+st.image("https://images-na.ssl-images-amazon.com/images/M/MV5BMzk2OTg4MTk1NF5BMl5BanBnXkFtZTcwNjExNTgzNA@@..jpg",width=400,caption='007 Golden Eye')
