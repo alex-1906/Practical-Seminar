@@ -51,7 +51,7 @@ if(st.button('Get next recommendation',on_click=increment_counter)):
         columns[i].caption(titles[i])
         columns[i].image(images[i],use_column_width=True)
         columns[i].markdown(stars[i])
-
+    #plot the bar chart
     scores = np.array(scores, dtype='float32')
     fig = plt.figure(figsize=(18, 5))
     ax = fig.add_axes([0, 0, 1, 1])
