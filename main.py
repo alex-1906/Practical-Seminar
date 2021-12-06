@@ -1,6 +1,5 @@
 from model import Recommender
 import streamlit as st
-import pandas as pd
 
 recommender = Recommender()
 posters = recommender.posters
@@ -39,6 +38,10 @@ if(st.button('Get next recommendation',on_click=increment_counter)):
     for i in range(0,len(titles)):
         columns[i].caption(titles[i])
         columns[i].image(images[i],use_column_width=True)
+
+
+
+
 
 
 

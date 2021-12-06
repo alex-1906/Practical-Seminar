@@ -2,17 +2,18 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 
 class Recommender:
 
     def __init__(self):
         '''Loading the required Datasets from the Data Folder'''
-        metadata_df = pd.read_csv('Data/movies_metadata.csv', low_memory=False)
-        ratings_df = pd.read_csv('Data/ratings.csv')
-        movies_df = pd.read_csv('Data/movies.csv')
-        posters_df = pd.read_csv('Data/movie_poster.csv', delimiter=';')
-        links_df = pd.read_csv('Data/links.csv')
+        metadata_df = pd.read_csv('../Data/movies_metadata.csv', low_memory=False)
+        ratings_df = pd.read_csv('../Data/ratings.csv')
+        movies_df = pd.read_csv('../Data/movies.csv')
+        posters_df = pd.read_csv('../Data/movie_poster.csv', delimiter=';')
+        links_df = pd.read_csv('../Data/links.csv')
 
         '''Preprocessing'''
 
@@ -134,3 +135,44 @@ class Recommender:
             row[1].roots.pop()
         df_out.sort_values(by='score',ascending=False,inplace=True)
         return df_out
+
+    def get_scaled_scores(self,userId):
+        top_ratings = self.get_user_ratings(userId).sort_values(ascending=False)
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+        scaled_ratings = scaler.fit_transform(top_ratings.values.reshape(-1, 1))
+        top_ratings_scaled = pd.DataFrame(data=scaled_ratings, index=top_ratings.index, columns=['scaled_ratings'])
+
+        already_seen = top_ratings_scaled.index.values
+        liste = []
+        for r in top_ratings.index:
+            recommendations = self.get_recommendations(self.indices[r], already_seen)
+            recommendations['root'] = r
+            liste.append(recommendations)
+        top_ratings_scaled
+        df = pd.concat(liste)
+
+        print('recommended movies: ', df.index.shape)
+        print('unique recommended movies: ', df.index.unique().shape)
+
+        df_out = pd.DataFrame(index=df.index.unique())
+        df_out['score'] = 0
+        df_out['roots'] = ''
+        df_out['root_scores'] = ''
+
+        for row in df.iterrows():
+            scaled_rating = top_ratings_scaled.loc[row[1].root].scaled_ratings
+            similarity = row[1].similarity
+            scaled_score = similarity * scaled_rating
+            df_out.loc[row[0], 'score'] += scaled_score
+            df_out.loc[row[0], 'roots'] += row[1].root + '|'
+            df_out.loc[row[0], 'root_scores'] += str(round(scaled_score, 2)) + '|'
+
+        df_out['roots'] = df_out.roots.str.split('|')
+        df_out['root_scores'] = df_out.root_scores.str.split('|')
+        # remove the first empty string '' in the lists
+        for row in df_out.iterrows():
+            row[1].roots.pop()
+            row[1].root_scores.pop()
+        df_out.sort_values(by='score', ascending=False, inplace=True)
+        return df_out
+
